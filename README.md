@@ -142,18 +142,6 @@ Published baselines:
 
 ---
 
-## Team
-
-| Name | Role |
-|---|---|
-| Krishna | Lead — algorithm, infrastructure |
-| *(add teammates)* | |
-| *(add teammates)* | |
-| *(add teammates)* | |
-| *(add teammates)* | |
-
----
-
 ## Submitting
 
 One submission per team via the [Google Form](https://forms.gle/YDRtYV5Vq68SZgKW9) — deadline May 21, 2026.  
