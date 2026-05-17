@@ -37,7 +37,8 @@ from pathlib import Path
 # Make the submission folder importable when run as a script
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from hybrid_placer import HybridConfig, HybridPlacer
+# from hybrid_placer import HybridConfig, HybridPlacer
+from qsa_tweaked import QSAConfig as HybridConfig, QSAPlacer as HybridPlacer
 
 from macro_place.loader import load_benchmark_from_dir
 from macro_place.objective import compute_proxy_cost
