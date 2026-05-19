@@ -7,7 +7,8 @@ import sys; sys.path.insert(0, '.')
 from macro_place.loader import load_benchmark_from_dir
 from macro_place.objective import compute_proxy_cost
 from macro_place.utils import validate_placement
-from submissions.our_submission.karthik_qsa import QSAPlacer, QSAConfig
+# from submissions.our_submission.karthik_qsa import QSAPlacer, QSAConfig
+from submissions.our_submission.qsa_tweaked import QSAPlacer, QSAConfig
 import time
 
 bench, plc = load_benchmark_from_dir("external/MacroPlacement/Testcases/ICCAD04/ibm01")
@@ -18,6 +19,7 @@ placer = QSAPlacer(QSAConfig(
     time_limit=60.0,
     verbose=True,
     use_soft_macro_opt=False,   # critical: too slow for short budgets
+    use_sb_escape=False,
 ))
 placement = placer.place(bench, plc=plc)
 print(f"\nRuntime: {time.time()-t0:.1f}s")

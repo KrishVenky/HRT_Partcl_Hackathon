@@ -102,9 +102,11 @@ class QSAConfig:
     density_weight: float = 0.5
     congestion_weight: float = 0.5
     # How often to call compute_proxy_cost() for a true density+congestion resync.
-    # At ~1000 moves/s this fires every ~1s (was every ~2s at 2000).
-    # compute_proxy_cost is ~1-5ms on the eval machine so lowering this is cheap.
-    density_recompute_interval: int = 1000  # SA moves between full proxy recomputes
+    # TIME-BASED: recompute every N seconds, not every N moves.
+    # compute_proxy_cost takes 1ms on fast eval machines but 65s on slow ones.
+    # Using wall-clock time ensures we don't stall on large benchmarks.
+    density_recompute_interval: int = 1000  # kept for API compat, unused
+    density_recompute_secs: float = 30.0    # recompute every N wall-clock seconds
 
     # Soft macro optimisation
     use_soft_macro_opt: bool = True
@@ -188,6 +190,14 @@ class QSAPlacer:
         # Padded net tensor for vectorised HPWL
         self._build_net_tensor(benchmark)
 
+        # Precompute per-macro half-sizes for fast overlap checks
+        self._precompute_overlap_cache(benchmark)
+
+        # Allocate extended-positions buffer (placement + ports) once.
+        # _extended_positions() will return this buffer instead of
+        # torch.cat-ing on every _delta_hpwl call.
+        self._init_ext_buffer(placement, benchmark)
+
         # --- 2. Initial cost ---
         current_hpwl = self._total_hpwl_fast(placement, benchmark)
 
@@ -195,31 +205,43 @@ class QSAPlacer:
         if plc is None and hasattr(benchmark, "_plc"):
             plc = benchmark._plc
 
+        # Measure compute_proxy_cost latency once on a warm call.
+        # Set recompute interval to max(3x latency, 60s) so SA always
+        # gets at least 3x more SA time than evaluation time per cycle.
+        # ibm17 takes 166s per call -- without this it gets 29 moves total.
+        current_density = current_congestion = 0.0
+        wl_scale = 1.0 / max(current_hpwl, 1.0)
+        last_recompute_time = 0.0
+        effective_recompute_secs = cfg.density_recompute_secs
         if plc is not None:
             try:
-                from macro_place.objective import compute_proxy_cost
-                fc = compute_proxy_cost(placement, benchmark, plc)
-                current_density    = float(fc["density_cost"])
-                current_congestion = float(fc["congestion_cost"])
-                # wl_scale converts raw HPWL to the proxy WL scale so SA's
-                # composite cost matches the evaluator's proxy_cost units.
-                wl_scale = float(fc["wirelength_cost"]) / max(current_hpwl, 1e-9)
+                import time as _t
+                from macro_place.objective import compute_proxy_cost as _cpc
+                _t0 = _t.time()
+                _fc = _cpc(placement, benchmark, plc)
+                _latency = _t.time() - _t0
+                # Calibrate: give SA at least 3x the eval latency between resyncs
+                effective_recompute_secs = max(_latency * 3.0, 60.0)
+                # Use the result to warm-start density/congestion and wl_scale
+                current_density    = float(_fc["density_cost"])
+                current_congestion = float(_fc["congestion_cost"])
+                wl_scale = float(_fc["wirelength_cost"]) / max(current_hpwl, 1e-9)
+                current_cost = float(_fc["proxy_cost"])
+                best_cost = current_cost
+                last_recompute_time = _latency  # don't immediately re-fire
                 if cfg.verbose:
-                    print(f"  [{benchmark.name}] init proxy={fc['proxy_cost']:.4f} "
-                          f"WL={fc['wirelength_cost']:.4f} D={current_density:.4f} "
-                          f"C={current_congestion:.4f}")
+                    print(f"  [{benchmark.name}] init proxy={current_cost:.4f} "
+                          f"WL={_fc['wirelength_cost']:.4f} D={current_density:.4f} "
+                          f"C={current_congestion:.4f} "
+                          f"(eval={_latency:.1f}s resync_interval={effective_recompute_secs:.0f}s)")
             except Exception as e:
                 if cfg.verbose:
-                    print(f"  [{benchmark.name}] plc unusable ({e}); HPWL-only mode")
+                    print(f"  [{benchmark.name}] init HPWL={current_hpwl:.4f} "
+                          f"(plc unusable: {e})")
                 plc = None
-                current_density = current_congestion = 0.0
-                # In HPWL-only mode wl_scale doesn't matter for the cost
-                # comparison, but T0 still depends on it. Use a normaliser
-                # tuned so T0 lands in the right regime.
-                wl_scale = 1.0 / max(current_hpwl, 1.0)
         else:
-            current_density = current_congestion = 0.0
-            wl_scale = 1.0 / max(current_hpwl, 1.0)
+            if cfg.verbose:
+                print(f"  [{benchmark.name}] init HPWL={current_hpwl:.4f} (no plc)")
 
         def composite(hpwl, density, congestion):
             return (wl_scale * hpwl
@@ -339,6 +361,8 @@ class QSAPlacer:
                 accepted += 1
                 accepts_since_softcell += 1
                 accept_window.append(True)
+                # Keep extended-positions buffer in sync with placement
+                self._sync_ext_buffer(placement)
                 if current_cost < best_cost:
                     best_cost = current_cost
                     best_hpwl = current_hpwl
@@ -358,15 +382,15 @@ class QSAPlacer:
             #      the right units for Metropolis acceptance
             #   3. Update current_density / current_congestion so composite()
             #      is accurate at the next resync
-            if plc is not None and moves_since_recompute >= cfg.density_recompute_interval:
+            # Time-based resync: fire every density_recompute_secs wall-clock
+            # seconds rather than every N moves. This adapts automatically to
+            # slow machines/large benchmarks where compute_proxy_cost is slow.
+            if plc is not None and (elapsed - last_recompute_time) >= effective_recompute_secs:
                 try:
                     from macro_place.objective import compute_proxy_cost
                     fc = compute_proxy_cost(placement, benchmark, plc)
                     current_density    = float(fc["density_cost"])
                     current_congestion = float(fc["congestion_cost"])
-                    # wl_scale maps raw HPWL -> proxy WL component.
-                    # This keeps the temperature schedule calibrated as
-                    # density/congestion evolve over the run.
                     wl_scale = float(fc["wirelength_cost"]) / max(current_hpwl, 1e-9)
                     true_proxy = float(fc["proxy_cost"])
                     current_cost = true_proxy
@@ -374,6 +398,7 @@ class QSAPlacer:
                         best_cost = true_proxy
                         best_hpwl = current_hpwl
                         best_placement = placement.clone()
+                    last_recompute_time = elapsed
                 except Exception:
                     pass
                 moves_since_recompute = 0
@@ -484,28 +509,20 @@ class QSAPlacer:
             max=H - all_sizes[:, 1] / 2
         )
 
-        # If clamping introduced overlaps, re-legalize with tetris first.
-        if self._full_placement_has_overlap(best_placement, benchmark):
+        # Fix only the macros that are overlapping after the clamp.
+        # Running full tetris on all Hn macros is O(N^2) in Python and
+        # takes 2+ minutes on ibm10 (786 macros) when only 2 need fixing.
+        # Instead, find just the offending macros and nudge them locally.
+        if self._hard_macros_have_overlap(best_placement, benchmark):
             if cfg.verbose:
                 print(f"  [{benchmark.name}] WARN: post-clamp overlaps detected; "
-                      f"re-legalizing with tetris.")
-            try:
-                sizes_np = benchmark.macro_sizes[:Hn].numpy().astype(np.float64)
-                movable_np = benchmark.get_movable_mask()[:Hn].numpy()
-                pos_np = best_placement[:Hn].numpy().copy().astype(np.float64)
-                half_w = sizes_np[:, 0] / 2
-                half_h = sizes_np[:, 1] / 2
-                legal_np = self._will_legalize(
-                    pos_np, movable_np, sizes_np, half_w, half_h,
-                    float(W), float(H), Hn
-                )
-                best_placement[:Hn] = torch.tensor(legal_np, dtype=best_placement.dtype)
-            except Exception as e:
-                if cfg.verbose:
-                    print(f"  [{benchmark.name}] tetris re-legalize failed ({e})")
+                      f"nudging affected macros.")
+            best_placement = self._nudge_overlapping(
+                best_placement, benchmark, Hn, W, H
+            )
 
         # Final check: if still overlapping, use greedy shelf-pack.
-        if self._full_placement_has_overlap(best_placement, benchmark):
+        if self._hard_macros_have_overlap(best_placement, benchmark):
             if cfg.verbose:
                 print(f"  [{benchmark.name}] WARN: falling back to greedy init.")
             best_placement = self._greedy_row_init(benchmark)
@@ -951,6 +968,61 @@ class QSAPlacer:
 
         return Q
 
+    def _find_hard_overlaps(self, placement, benchmark):
+        """Vectorized O(N^2) overlap finder. Returns tensor of macro indices
+        that overlap at least one other hard macro. Fast because it uses
+        a single batched broadcast instead of a Python loop.
+        """
+        Hn = benchmark.num_hard_macros
+        pos = placement[:Hn]          # [Hn, 2]
+        sizes = benchmark.macro_sizes[:Hn]  # [Hn, 2]
+        EPS = 1e-3
+        # Broadcast pairwise distances [Hn, Hn]
+        dx = torch.abs(pos[:, 0].unsqueeze(1) - pos[:, 0].unsqueeze(0))
+        dy = torch.abs(pos[:, 1].unsqueeze(1) - pos[:, 1].unsqueeze(0))
+        sx = (sizes[:, 0].unsqueeze(1) + sizes[:, 0].unsqueeze(0)) / 2 + EPS
+        sy = (sizes[:, 1].unsqueeze(1) + sizes[:, 1].unsqueeze(0)) / 2 + EPS
+        ov = (dx < sx) & (dy < sy)   # [Hn, Hn]
+        ov.fill_diagonal_(False)
+        return torch.where(ov.any(dim=1))[0]  # indices of overlapping macros
+
+    def _nudge_overlapping(self, placement, benchmark, Hn, W, H):
+        """Fix only overlapping hard macros. Uses vectorized overlap detection
+        then nudges only the K offending macros (usually 1-2 after a clamp).
+        """
+        placement = placement.clone()
+        sizes = benchmark.macro_sizes[:Hn]
+        EPS = 1e-3
+        offenders = self._find_hard_overlaps(placement, benchmark).tolist()
+        step_sizes = [0.1, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+        for i in offenders:
+            w = sizes[i, 0].item(); h = sizes[i, 1].item()
+            ox = placement[i, 0].item(); oy = placement[i, 1].item()
+            # Precompute separation for this macro vs all others
+            sx = (sizes[i, 0] + sizes[:Hn, 0]) / 2 + EPS
+            sy = (sizes[i, 1] + sizes[:Hn, 1]) / 2 + EPS
+            best_d = float('inf'); best_x = ox; best_y = oy
+            for step in step_sizes:
+                for ddx in [-step, 0, step]:
+                    for ddy in [-step, 0, step]:
+                        if ddx == 0 and ddy == 0: continue
+                        cx = max(w/2, min(W - w/2, ox + ddx))
+                        cy = max(h/2, min(H - h/2, oy + ddy))
+                        dx2 = torch.abs(cx - placement[:Hn, 0])
+                        dy2 = torch.abs(cy - placement[:Hn, 1])
+                        ov2 = (dx2 < sx) & (dy2 < sy); ov2[i] = False
+                        if not ov2.any():
+                            d = ddx*ddx + ddy*ddy
+                            if d < best_d:
+                                best_d = d; best_x = cx; best_y = cy
+                if best_d < float('inf'): break
+            placement[i, 0] = best_x; placement[i, 1] = best_y
+        return placement
+
+    def _hard_macros_have_overlap(self, placement, benchmark):
+        """Check only hard macro overlaps, ignoring soft macros."""
+        return len(self._find_hard_overlaps(placement, benchmark)) > 0
+
     def _full_placement_has_overlap(self, placement, benchmark):
         """O(N^2) full overlap check via broadcasting.
 
@@ -1222,33 +1294,63 @@ class QSAPlacer:
                     macro_nets[n].append(net_id)
         return macro_nets
 
+    def _init_ext_buffer(self, placement, benchmark):
+        """Allocate the extended-positions buffer once. After this,
+        _update_ext_buffer(idx, nx, ny) updates only the changed row.
+        This eliminates the torch.cat allocation on every _delta_hpwl call.
+        """
+        ports = benchmark.port_positions
+        if ports.shape[0] > 0:
+            self._ext_buf = torch.cat([placement, ports], dim=0).clone()
+        else:
+            self._ext_buf = placement.clone()
+        self._ext_has_ports = ports.shape[0] > 0
+
+    def _sync_ext_buffer(self, placement):
+        """Full sync after a move is accepted."""
+        n = placement.shape[0]
+        self._ext_buf[:n] = placement
+
     def _extended_positions(self, placement, benchmark):
+        """Return extended positions. Uses cached buffer if available."""
+        if hasattr(self, '_ext_buf'):
+            return self._ext_buf
         if benchmark.port_positions.shape[0] > 0:
             return torch.cat([placement, benchmark.port_positions], dim=0)
         return placement
 
-    def _has_overlap(self, idx, nx, ny, placement, benchmark):
+    def _precompute_overlap_cache(self, benchmark):
+        """Precompute per-macro half-size arrays used in every overlap check.
+        Called once before the SA loop. Cuts _has_overlap from O(Hn) tensor
+        allocations to a single subtraction + comparison per call.
+        """
         Hn = benchmark.num_hard_macros
+        EPS = 1e-3
+        # half-widths and half-heights for all hard macros, shape [Hn]
+        self._oc_hw = benchmark.macro_sizes[:Hn, 0] / 2  # half-width
+        self._oc_hh = benchmark.macro_sizes[:Hn, 1] / 2  # half-height
+        self._oc_eps = EPS
+        self._oc_Hn = Hn
+
+    def _has_overlap(self, idx, nx, ny, placement, benchmark):
+        # Use precomputed half-sizes; only compute dx/dy at call time.
+        Hn = self._oc_Hn
+        hw = self._oc_hw; hh = self._oc_hh; EPS = self._oc_eps
         dx = torch.abs(placement[:Hn, 0] - nx)
         dy = torch.abs(placement[:Hn, 1] - ny)
-        wi = benchmark.macro_sizes[idx, 0].item()
-        hi = benchmark.macro_sizes[idx, 1].item()
-        EPS = 1e-3
-        sx = (benchmark.macro_sizes[:Hn, 0] + wi) / 2 + EPS
-        sy = (benchmark.macro_sizes[:Hn, 1] + hi) / 2 + EPS
+        sx = hw + hw[idx] + EPS
+        sy = hh + hh[idx] + EPS
         ov = (dx < sx) & (dy < sy)
         ov[idx] = False
         return ov.any().item()
 
     def _has_overlap_excluding(self, idx, nx, ny, excl, placement, benchmark):
-        Hn = benchmark.num_hard_macros
+        Hn = self._oc_Hn
+        hw = self._oc_hw; hh = self._oc_hh; EPS = self._oc_eps
         dx = torch.abs(placement[:Hn, 0] - nx)
         dy = torch.abs(placement[:Hn, 1] - ny)
-        wi = benchmark.macro_sizes[idx, 0].item()
-        hi = benchmark.macro_sizes[idx, 1].item()
-        EPS = 1e-3
-        sx = (benchmark.macro_sizes[:Hn, 0] + wi) / 2 + EPS
-        sy = (benchmark.macro_sizes[:Hn, 1] + hi) / 2 + EPS
+        sx = hw + hw[idx] + EPS
+        sy = hh + hh[idx] + EPS
         ov = (dx < sx) & (dy < sy)
         ov[idx] = False; ov[excl] = False
         return ov.any().item()
