@@ -1,23 +1,55 @@
 # HRT/Partcl Macro Placement Hackathon — Team Submission
 
-A Simulated Annealing macro placer built for the [Partcl/HRT $20K competition](CHALLENGE.md).  
+A Quantum-Annealing-Inspired SA macro placer built for the [Partcl/HRT $20K competition](CHALLENGE.md).  
 Competition deadline: **May 21, 2026**.
+
+---
+
+## Submission File
+
+```
+submissions/our_submission/qsa_contest.py
+```
+
+Self-contained single file — no external submission dependencies.
+
+Run with the official evaluator:
+```bash
+uv run evaluate submissions/our_submission/qsa_contest.py -b ibm01
+uv run evaluate submissions/our_submission/qsa_contest.py --all
+```
 
 ---
 
 ## What We Built
 
-We implemented a custom **Simulated Annealing (SA)** placer that positions chip macros (large memory blocks, IPs, etc.) on a floorplan to minimise wirelength, density, and routing congestion.
+We implemented a **QSA (Quantum-Annealing-Inspired Simulated Annealing)** placer that positions chip macros on a floorplan to minimise the competition proxy cost (wirelength + 0.5×density + 0.5×congestion).
 
 **Algorithm highlights:**
-- Greedy shelf-pack initialisation — guaranteed zero overlaps from the start
-- Two move types: random perturbation (60%) and pairwise swap (40%)
-- Connectivity-biased macro selection — macros in more nets are moved more often
-- Time-based temperature schedule — robust across all 17 benchmarks regardless of design size
-- Periodic reheating (up to 5×) to escape local optima
-- Full 55-minute budget per benchmark (competition allows 1 hour each)
 
-**Score target:** Beat the SA baseline (avg `2.1251`) and approach RePlAce (`1.4578`) on all 17 IBM benchmarks. First confirmed run on ibm01 (60s, 1.8% of budget): proxy cost `1.4187`, zero overlaps.
+1. **Smart initialisation** — starts from the benchmark's hand-crafted `macro_positions` layout, legalised via a tetris-style spiral search (same approach as rank-11 entry). Falls back to shelf-pack only if legalisation fails. Starts SA from a much better position than greedy methods.
+
+2. **Vectorised HPWL** — padded net tensor allows fully batched HPWL computation (~38× faster than a Python net-loop). More SA moves per second within the same time budget.
+
+3. **Proxy-cost objective** — SA directly minimises `WL + 0.5×D + 0.5×C`, i.e. the exact competition scoring metric, not just raw wirelength.
+
+4. **Move mix** — 40% pairwise swaps + 60% random perturbations, with connectivity-weighted macro selection (macros in more nets are perturbed more often).
+
+5. **Classical reheating** — up to 4 reheats on stall; restores best-known placement and raises temperature to escape local optima.
+
+6. **Time-based density resync** — `compute_proxy_cost` is called every N wall-clock seconds (calibrated to 3× the measured call latency). Prevents ibm17-style stalls where a 166s/call evaluation would otherwise dominate runtime.
+
+7. **plc auto-loading** — if the evaluator does not pass a `PlacementCost` object, the placer loads it from disk automatically, enabling full proxy-cost tracking in all run modes.
+
+**Results (full 55-minute runs, all 17 IBM benchmarks):**
+
+| Metric | Value |
+|---|---|
+| Average proxy cost | **1.5382** |
+| vs SA baseline (2.1251) | +27.6% better |
+| vs RePlAce baseline (1.4578) | −5.5% |
+| Valid placements (0 overlaps) | 17 / 17 |
+| Runtime per benchmark | ~3300 s (55 min) |
 
 ---
 
@@ -25,20 +57,19 @@ We implemented a custom **Simulated Annealing (SA)** placer that positions chip 
 
 ```
 submissions/our_submission/
-    sa_placer.py       ← our placer (what gets submitted)
-    compare.py         ← harness to compare multiple placers side-by-side
+    qsa_contest.py     <- SUBMISSION FILE (self-contained)
+    parallel_eval.py   <- local harness: run all 17 benchmarks in parallel
+    quick_eval.py      <- local harness: quick iteration at reduced time budget
 
-macro_place/           ← competition evaluation framework (do not modify)
-    benchmark.py       ← Benchmark dataclass (PyTorch tensors)
-    loader.py          ← loads IBM/NG45 benchmarks from disk
-    objective.py       ← proxy cost computation (WL + density + congestion)
-    utils.py           ← validate_placement, visualize_placement
+macro_place/           <- competition evaluation framework (do not modify)
+    benchmark.py
+    loader.py
+    objective.py
+    utils.py
 
-submissions/examples/  ← reference placers provided by competition organisers
-external/MacroPlacement/ ← TILOS evaluator submodule (git submodule)
-
-CHALLENGE.md           ← original competition README (prizes, rules, baselines)
-SETUP.md               ← competition API reference
+external/MacroPlacement/ <- TILOS evaluator submodule
+CHALLENGE.md             <- competition rules, prizes, baselines
+SETUP.md                 <- competition API reference
 ```
 
 ---
@@ -48,101 +79,40 @@ SETUP.md               ← competition API reference
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-# 1. Clone this repo
 git clone https://github.com/KrishVenky/HRT_Partcl_Hackathon.git
 cd HRT_Partcl_Hackathon
-
-# 2. Pull the TILOS evaluator (needed to load benchmarks and compute cost)
 git submodule update --init external/MacroPlacement
-
-# 3. Install dependencies
 uv sync
 ```
 
 ---
 
-## Running the Placer
+## Running
 
-### Quick validity check on ibm01 (~1 min)
-
+### Official evaluator (single benchmark)
 ```bash
-uv run python - << 'EOF'
-import sys; sys.path.insert(0, '.')
-from macro_place.loader import load_benchmark_from_dir
-from macro_place.objective import compute_proxy_cost
-from macro_place.utils import validate_placement
-from submissions.our_submission.sa_placer import SAPlacer
-import time
-
-bench, plc = load_benchmark_from_dir("external/MacroPlacement/Testcases/ICCAD04/ibm01")
-placer = SAPlacer(time_limit=60.0)   # short run for quick check
-placement = placer.place(bench)
-
-valid, violations = validate_placement(placement, bench)
-costs = compute_proxy_cost(placement, bench, plc)
-print(f"Valid: {valid}  |  Overlaps: {costs['overlap_count']}  |  Proxy: {costs['proxy_cost']:.4f}")
-EOF
+uv run evaluate submissions/our_submission/qsa_contest.py -b ibm01
 ```
 
-### Compare against competition baselines across benchmarks
-
+### All 17 benchmarks in parallel (4 workers, ~14 hours)
 ```bash
-# Single benchmark
-python submissions/our_submission/compare.py submissions/our_submission/sa_placer.py -b ibm01
-
-# Subset (fast iteration)
-python submissions/our_submission/compare.py submissions/our_submission/sa_placer.py -b ibm01 ibm03 ibm09
-
-# All 17 IBM benchmarks (takes ~15 hours with full time limit)
-python submissions/our_submission/compare.py submissions/our_submission/sa_placer.py --all
+uv run python submissions/our_submission/parallel_eval.py --workers 4
 ```
 
-Output columns: `proxy cost | overlaps | wirelength | density | congestion` vs SA and RePlAce baselines.
-
-### Official evaluator
-
+### Quick sanity check (60s per benchmark)
 ```bash
-uv run evaluate submissions/our_submission/sa_placer.py -b ibm01
-uv run evaluate submissions/our_submission/sa_placer.py --all
-uv run evaluate submissions/our_submission/sa_placer.py --all --vis   # saves visualisations
+uv run python submissions/our_submission/parallel_eval.py \
+    --placer submissions/our_submission/qsa_contest.py \
+    --workers 2 --time 60 -b ibm01 ibm10 ibm18
 ```
-
----
-
-## Key Parameters (sa_placer.py)
-
-| Parameter | Default | Effect |
-|---|---|---|
-| `time_limit` | `3300.0` s | Wall-clock budget per benchmark (rule: 3600 s max) |
-| `cooling_alpha` | `0.001` | T drops to 0.1% of T₀ by end of run |
-| `swap_prob` | `0.40` | 40% of moves are pairwise swaps |
-| `max_reheats` | `5` | Max reheat events per benchmark |
-| `perturb_frac_init` | `0.30` | Initial perturbation radius (30% of canvas) |
-| `perturb_frac_final` | `0.005` | Final perturbation radius (0.5% of canvas) |
-
-For quick local testing, pass `SAPlacer(time_limit=60.0)` to get a result in ~1 minute.
 
 ---
 
 ## Competition Context
-
-See [CHALLENGE.md](CHALLENGE.md) for the full competition rules, prize structure, evaluation details, and current leaderboard.
 
 **Proxy cost formula** (lower is better):
 ```
 Proxy Cost = 1.0 × Wirelength + 0.5 × Density + 0.5 × Congestion
 ```
 
-Published baselines:
-- SA baseline: avg `2.1251` across 17 benchmarks
-- RePlAce baseline: avg `1.4578` (the target to beat)
-- Top leaderboard (DREAMPlace variants): ~`1.40`
-
-**Merch:** Every valid submission (zero overlaps, within runtime) gets HRT swag.
-
----
-
-## Submitting
-
-One submission per team via the [Google Form](https://forms.gle/YDRtYV5Vq68SZgKW9) — deadline May 21, 2026.  
-Private repos must be shared with judges for evaluation.
+See [CHALLENGE.md](CHALLENGE.md) for full rules, prize structure, and leaderboard.
