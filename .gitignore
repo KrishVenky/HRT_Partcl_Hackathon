@@ -59,6 +59,8 @@ results/
 # Logs
 *.log
 logs/
+os_debug.txt
+*_debug.txt
 
 # Jupyter
 .ipynb_checkpoints/

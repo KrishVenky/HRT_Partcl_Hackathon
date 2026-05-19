@@ -163,7 +163,7 @@ def _print_summary(results):
         print(
             f"{r['name']:<10} {r['proxy']:>8.4f} {sa:>8.4f} {re:>8.4f} "
             f"{vs_sa:>7.1f}% {vs_re:>7.1f}% "
-            f"{r['overlaps']:>5} {'✓' if r['valid'] else '✗':>6} {r['runtime']:>6.0f}s"
+            f"{r['overlaps']:>5} {'Y' if r['valid'] else 'N':>6} {r['runtime']:>6.0f}s"
         )
 
     print("-" * 80)
