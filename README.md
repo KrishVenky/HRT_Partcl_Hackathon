@@ -233,66 +233,78 @@ Submissions are ranked by **average proxy cost** across all 17 IBM benchmarks (l
 |------|------|---------------|------|-------|----------|---------|----------|-------|
 | 1 | "Carrotato" | **0.9671** | — | — | 0 | 3.8min/bench | | New 5/12. |
 | 2 | "Shoom" | **0.978** | — | — | 0 | 55min/bench | | Resubmitted 5/12. Previous variant verified 1.4901. |
-| 3 | "vmallela" | **1.0109** | 0.7644 | 1.2921 | 0 | 15.5h total | :white_check_mark: | Verified 1.0109 (self-reported 1.1). |
-| 4 | "DREAMPlaceProMaxUltra" | **1.0121** | 0.7955 | 1.2167 | 0 | 6h total | :white_check_mark: | Verified 1.0121 (self-reported 1.0467). Built and ran from team-provided `Dockerfile`. |
-| 5 | "QuantSC" | **1.0285** | — | — | 0 | 55min/bench | | New 5/16. (Vincent Xianrui Zhang, USC) |
-| 6 | "QED" | **1.031** | — | — | 0 | 30min/bench | | New 5/16. (Shubham Shukla) |
-| 7 | "Cezar" | **1.037** | — | — | 0 | 4h total | | Resubmitted 5/11. Previous variant verified 1.1893 (same self-report 1.037). Now ships team-provided `Dockerfile`. |
-| 8 | "Place, Route, Roll" | **1.0594** | — | — | 0 | ~17min/bench | | New 5/17. (Mike Gao & Amanda Yin, Cerebras) Team's prior submission was DQ'd for overlaps; resubmitted with 0 overlaps. |
-| 9 | "thinkorplace" | **1.0771** | — | — | 0 | 52min/bench | | New 5/13. (Brendan Murrell & Xiaofei Zhang) |
-| 10 | "KLA MACH" | **1.0817** | — | — | 0 | 30min/bench | | Resubmitted 5/16 (phase39, team "Chuanqi Chen"). Previous: phase38 (1.1335), phase36 verified 1.2121. Consolidates UTDA / Chuanqi Chen / KLA MACH submissions (one algo per team). |
-| 11 | "Archgen" | **1.0948** | 0.7931 | 1.4345 | 0 | 15.25h total | :white_check_mark: | Verified 1.0948 (self-reported 1.16511 — 5.6% BETTER than self-reported). |
-| 12 | "Vibe" | **1.1443** | — | — | 0 | 13851s total | :white_check_mark: | Verified 1.1443 (self-reported 1.1477). |
-| 13 | "JonaU" | **1.1524** | — | — | 0 | 55min/bench | | New 5/13. (Jona Uhe) |
-| 14 | "ArzunPD" | **1.1883** | — | — | 0 | 55min/bench | | Resubmitted 5/8 (was 1.2478). |
-| 15 | "Talyxion" | **1.2075** | — | — | 0 | 7.2min/bench | | New 5/10. |
-| 16 | "Hoop Dreams" | **1.2207** | 0.8972 | 1.5072 | 0 | 5h total | :white_check_mark: | Verified 1.2207 (self-reported 1.2206). Built and ran from team-provided `Dockerfile`. |
-| 17 | "MakerCode" | **1.2282** | — | — | 0 | ~55min/bench | | Resubmitted 5/16 (v2). Was 1.26. (Wei Yet Ng) |
-| 18 | "KKPlace" | **1.2451** | — | — | 0 | 55min/bench | | New 5/13. (Kenneth Hou) |
-| 19 | "Two-IIITK-Kids" | **1.2648** | — | — | 0 | ~34min/bench | | Resubmitted 5/15. Was 1.2868. (Amruth Ayaan Gulawani & Joel Dan Philip, IIIT Kottayam) |
-| 20 | "Adam_A" | **1.2655** | — | — | 0 | 682s/bench | | New 5/10. |
-| 21 | "The Basin Jumpers" | **1.2748** | — | — | 0 | 900s/bench | | Resubmitted 5/13 (William Zhang & Leon Do). Was "William Zhang" / "Convex Optimization", verified 1.4556. |
-| 22 | "RoRa" | **1.2788** | 0.9577 | 1.6222 | 0 | 2.6h total | :white_check_mark: | Verified 1.2788 (self-reported 1.2723). Resubmitted 5/1. |
-| 23 | "MTK" | **1.2818** | 0.9073 | 1.6529 | 0 | 37s/bench (GPU) | :white_check_mark: | Verified 1.2818 (self-reported 1.317). |
-| 24 | "Electric Beatle" | **1.3253** | — | — | 0 | 2000s/bench (GPU) | | Resubmitted 4/30 (was verified 1.3913). |
-| 25 | "UToronto Analytical" | **1.3323** | 0.9371 | 1.6545 | 0 | 24min total | :white_check_mark: | Verified 1.3323 (self-reported 1.3325). |
-| 26 | "V5" | **1.3382** | — | — | 0 | 850s/bench | | New 4/23. |
-| 27 | "jrslbenn" | **1.353** | — | — | 0 | 750s/bench | | New 5/4. |
-| 28 | "Barsat Khadka" | **1.38** | — | — | 0 | 1000-1800s/bench | | New 5/5. |
-| 29 | "Varun's Parallel Worlds" | **1.4017** | 1.0362 | 1.7298 | 0 | 27s/bench | :white_check_mark: | |
-| 30 | "UT Austin - AS" | **1.4076** | — | — | 0 | 17s/bench | | |
-| 31 | "ByteDancer" | **1.4151** | 1.0236 | 1.7792 | 0 | 38min/bench | :white_check_mark: | |
-| 32 | "TAISPlAce" | **1.4321** | — | — | 0 | 28min/bench | | |
-| 33 | "Pragnay" | **1.4427** | — | — | 0 | 632s/bench | | Blocked on `compute_proxy_cost(..., plc=None)` in fallback path. |
-| 34 | "No Man's Sky" | **1.4445** | — | — | 0 | 8.8min/bench | | New 5/4, resubmitted 5/6. |
-| 35 | "Aegir" | **1.4553** | — | — | 0 | 104s/bench | | New 5/9. |
-| 36 | "another Waterloo kid" | **1.4568** | — | — | 0 | 118s/bench | | Blocked on Modal cloud dispatch — can't run air-gapped. |
+| 3 | "Macro Polo" | **0.9968** | — | — | 0 | ~1080s/bench | | New 5/20. (Carter Tran) |
+| 4 | "vmallela" | **1.0109** | 0.7644 | 1.2921 | 0 | 15.5h total | :white_check_mark: | Verified 1.0109 (self-reported 1.1). |
+| 5 | "DREAMPlaceProMaxUltra" | **1.0121** | 0.7955 | 1.2167 | 0 | 6h total | :white_check_mark: | Verified 1.0121 (self-reported 1.0467). Built and ran from team-provided `Dockerfile`. |
+| 6 | "QuantSC" | **1.0285** | — | — | 0 | 55min/bench | | New 5/16. (Vincent Xianrui Zhang, USC) |
+| 7 | "QED" | **1.031** | — | — | 0 | 30min/bench | | New 5/16. (Shubham Shukla) |
+| 8 | "Two-IIITK-Kids" | **1.0353** | — | — | 0 | ~964s/bench | | Resubmitted 5/20 (SmoothGDCD). Was 1.2648. (Amruth Ayaan Gulawani & Joel Dan Philip, IIIT Kottayam) |
+| 9 | "Cezar" | **1.037** | — | — | 0 | 4h total | | Resubmitted 5/11. Previous variant verified 1.1893 (same self-report 1.037). Now ships team-provided `Dockerfile`. |
+| 10 | "Place, Route, Roll" | **1.0594** | — | — | 0 | ~17min/bench | | New 5/17. (Mike Gao & Amanda Yin, Cerebras) Team's prior submission was DQ'd for overlaps; resubmitted with 0 overlaps. |
+| 11 | "Talyxion" | **1.0623** | — | — | 0 | ≈28min/bench | | Resubmitted 5/19 (HybridV24). Was 1.2075. (Nguyen Van Thanh) |
+| 12 | "thinkorplace" | **1.0771** | — | — | 0 | 52min/bench | | New 5/13. (Brendan Murrell & Xiaofei Zhang) |
+| 13 | "jrslbenn" | **1.079** | — | — | 0 | 35min/bench | | Resubmitted 5/20 (HAPpyPlace). Was 1.353. |
+| 14 | "KLA MACH" | **1.0817** | — | — | 0 | 30min/bench | | Resubmitted 5/16 (phase39, team "Chuanqi Chen"). Previous: phase38 (1.1335), phase36 verified 1.2121. Consolidates UTDA / Chuanqi Chen / KLA MACH submissions (one algo per team). |
+| 15 | "Archgen" | **1.0948** | 0.7931 | 1.4345 | 0 | 15.25h total | :white_check_mark: | Verified 1.0948 (self-reported 1.16511 — 5.6% BETTER than self-reported). |
+| 16 | "Vibe" | **1.1443** | — | — | 0 | 13851s total | :white_check_mark: | Verified 1.1443 (self-reported 1.1477). |
+| 17 | "JonaU" | **1.1524** | — | — | 0 | 55min/bench | | New 5/13. (Jona Uhe) |
+| 18 | "solomid" | **~1.16** | — | — | 0 | <55min/bench | | New 5/20. (Keith So) Engine-only AVG on 5-benchmark sample (ibm01/03/09/13/17); full-17 pending. |
+| 19 | "ArzunPD" | **1.1883** | — | — | 0 | 55min/bench | | Resubmitted 5/8 (was 1.2478). |
+| 20 | "MakerCode" | **1.2153** | — | — | 0 | 16h total | | Resubmitted 5/20 (v4). Was 1.2282. (Wei Yet Ng) |
+| 21 | "Hoop Dreams" | **1.2207** | 0.8972 | 1.5072 | 0 | 5h total | :white_check_mark: | Verified 1.2207 (self-reported 1.2206). Built and ran from team-provided `Dockerfile`. |
+| 22 | "Hachimi" | **1.226** | — | — | 0 | 40min/bench | | New 5/20. (Ching Yi Teoh, Xiaoyi Jiang, Guanlun Sun) |
+| 23 | "KKPlace" | **1.2451** | — | — | 0 | 55min/bench | | New 5/13. (Kenneth Hou) |
+| 24 | "Adam_A" | **1.2655** | — | — | 0 | 682s/bench | | New 5/10. |
+| 25 | "The Basin Jumpers" | **1.2748** | — | — | 0 | 900s/bench | | Resubmitted 5/13 (William Zhang & Leon Do). Was "William Zhang" / "Convex Optimization", verified 1.4556. |
+| 26 | "RoRa" | **1.2788** | 0.9577 | 1.6222 | 0 | 2.6h total | :white_check_mark: | Verified 1.2788 (self-reported 1.2723). Resubmitted 5/1. |
+| 27 | "MTK" | **1.2818** | 0.9073 | 1.6529 | 0 | 37s/bench (GPU) | :white_check_mark: | Verified 1.2818 (self-reported 1.317). |
+| 28 | "MJ97" | **1.3241** | — | — | 0 | ~32min/bench | | New 5/20. (Mummana Jagadeesh, Pudi Govardhan, Prathipati Vamsi Sai Krishna) |
+| 29 | "Electric Beatle" | **1.3253** | — | — | 0 | 2000s/bench (GPU) | | Resubmitted 4/30 (was verified 1.3913). |
+| 30 | "UToronto Analytical" | **1.3323** | 0.9371 | 1.6545 | 0 | 24min total | :white_check_mark: | Verified 1.3323 (self-reported 1.3325). |
+| 31 | "V5" | **1.3382** | — | — | 0 | 850s/bench | | New 4/23. |
+| 32 | "UT Dallas" | **1.35** | — | — | 0 | ~500s/bench | | New 5/20. (Mark Sears) |
+| 33 | "Barsat Khadka" | **1.38** | — | — | 0 | 1000-1800s/bench | | New 5/5. |
+| 34 | "Varun's Parallel Worlds" | **1.4017** | 1.0362 | 1.7298 | 0 | 27s/bench | :white_check_mark: | |
+| 35 | "ForageForge" | **1.4074** | — | — | 0 | 2433s total | | New 5/19. (Zhou) |
+| 36 | "UT Austin - AS" | **1.4076** | — | — | 0 | 17s/bench | | |
+| 37 | "ByteDancer" | **1.4151** | 1.0236 | 1.7792 | 0 | 38min/bench | :white_check_mark: | |
+| 38 | "TAISPlAce" | **1.4321** | — | — | 0 | 28min/bench | | |
+| 39 | "Pragnay" | **1.4427** | — | — | 0 | 632s/bench | | Blocked on `compute_proxy_cost(..., plc=None)` in fallback path. |
+| 40 | "No Man's Sky" | **1.4445** | — | — | 0 | 8.8min/bench | | New 5/4, resubmitted 5/6. |
+| 41 | "Aegir" | **1.4553** | — | — | 0 | 104s/bench | | New 5/9. |
+| 42 | "ETH Zurich Student" | **1.4564** | — | — | 0 | 3.5s/bench | | New 5/20. (Basil Gross) |
+| 43 | "another Waterloo kid" | **1.4568** | — | — | 0 | 118s/bench | | Blocked on Modal cloud dispatch — can't run air-gapped. |
 | — | RePlAce (baseline) | **1.4578** | 0.9976 | 1.8370 | 0 | — | :white_check_mark: | |
-| 37 | "W3 Solutions" | **1.4824** | — | — | 0 | 90s/bench | | Runtime exceeds 1h/bench cap. |
-| 38 | "Captain.Rhinoceros" | **1.4906** | — | — | 0 | <26.6min/bench | | New 5/13. (John Saleeby) |
-| 39 | "Jiangban Ya" | **1.4943** | 1.0891 | 1.8099 | 0 | 49s/bench | :white_check_mark: | |
-| 40 | "UTAUSTIN-CT" | **1.5062** | 1.1363 | 1.7941 | 0 | 6s/bench | :white_check_mark: | |
-| 41 | "oracleX" | **1.5130** | 1.1340 | 1.7937 | 0 | 11s/bench | :white_check_mark: | |
-| 42 | "SEVmakers" | **1.5200** | — | — | 0 | 200s/bench | | Private repo — pending judge access. |
-| 43 | "CA" | **1.5247** | 1.2226 | 1.7945 | 0 | 2s/bench | :white_check_mark: | Verified 1.5247 (self-reported 1.5238). |
-| 44 | "ZeroLatency" | **1.5286** | — | — | 0 | 17s total | | New 5/9. |
-| 45 | "#5 ubc cpen student" | **1.5337** | 1.1411 | 1.8084 | 0 | 13s/bench | :white_check_mark: | |
-| 46 | Will Seed (Partcl) | **1.5338** | 1.1625 | 1.7965 | 0 | 35s total | :white_check_mark: | |
-| 47 | "6ummy" | **1.5361** | — | — | 0 | 221s/bench | | New 5/17. (Jungwoo Shin) |
-| 48 | "RUDY Can't Fail" | **1.5397** | 1.1927 | 1.8881 | 0 | 6min total | :white_check_mark: | Verified 1.5397 (self-reported 1.3605). |
-| 49 | "UT Austin - RH" | **1.6037** | — | — | 0 | 4.5s/bench | | |
-| 50 | "Mr_Chonk" | **1.7031** | — | — | 0 | ~23min/bench | | New 5/16. (Kush Voorakkara) |
-| 51 | "Binghamton" | **1.7621** | — | — | 0 | 2min/bench | | New 5/10. Team also reports 1.5375 from an alternate non-legalized run. |
-| 52 | "UT Austin - CT" | **1.8706** | — | — | 0 | 187s/bench | | |
-| 53 | "rpocevi" | **1.8894** | — | — | 0 | 22.5s/bench | | New 5/9. |
-| 54 | "AS" | **1.9121** | 1.4614 | 2.3508 | 0 | 0.16s total | :white_check_mark: | |
-| 55 | "Adi's Team" | **2.0025** | — | — | 0 | 3726s/bench | | Blocked on `compute_proxy_cost(skip_congestion=True)` kwarg. |
-| 56 | "Sharc #1" | **2.0433** | 1.5143 | 2.4336 | 0 | 96s/bench | :white_check_mark: | |
+| 44 | "W3 Solutions" | **1.4824** | — | — | 0 | 90s/bench | | Runtime exceeds 1h/bench cap. |
+| 45 | "Team Rocket" | **1.4836** | — | — | 0 | ~11.5min/bench | | New 5/20. (Siddharth Doshi) |
+| 46 | "Captain.Rhinoceros" | **1.4906** | — | — | 0 | <26.6min/bench | | New 5/13. (John Saleeby) |
+| 47 | "Jiangban Ya" | **1.4943** | 1.0891 | 1.8099 | 0 | 49s/bench | :white_check_mark: | |
+| 48 | "Quantux" | **1.5059** | — | — | 0 | 1537s total | | New 5/19. (Tuomas Sorakivi & Phung Cheng Fei) |
+| 49 | "UTAUSTIN-CT" | **1.5062** | 1.1363 | 1.7941 | 0 | 6s/bench | :white_check_mark: | |
+| 50 | "oracleX" | **1.5130** | 1.1340 | 1.7937 | 0 | 11s/bench | :white_check_mark: | |
+| 51 | "SEVmakers" | **1.5200** | — | — | 0 | 200s/bench | | Private repo — pending judge access. |
+| 52 | "CA" | **1.5247** | 1.2226 | 1.7945 | 0 | 2s/bench | :white_check_mark: | Verified 1.5247 (self-reported 1.5238). |
+| 53 | "ZeroLatency" | **1.5286** | — | — | 0 | 17s total | | New 5/9. |
+| 54 | "#5 ubc cpen student" | **1.5337** | 1.1411 | 1.8084 | 0 | 13s/bench | :white_check_mark: | |
+| 55 | Will Seed (Partcl) | **1.5338** | 1.1625 | 1.7965 | 0 | 35s total | :white_check_mark: | |
+| 56 | "6ummy" | **1.5361** | — | — | 0 | 221s/bench | | New 5/17. (Jungwoo Shin) |
+| 57 | "RUDY Can't Fail" | **1.5397** | 1.1927 | 1.8881 | 0 | 6min total | :white_check_mark: | Verified 1.5397 (self-reported 1.3605). |
+| 58 | "UT Austin - SL" | **1.5999** | — | — | 0 | ~258s total | | New 5/19. Resubmitted 5/20 (was 1.7269). (Sam Lin) |
+| 59 | "UT Austin - RH" | **1.6037** | — | — | 0 | 4.5s/bench | | |
+| 60 | "Mr_Chonk" | **1.7031** | — | — | 0 | ~23min/bench | | New 5/16. (Kush Voorakkara) |
+| 61 | "Binghamton" | **1.7621** | — | — | 0 | 2min/bench | | New 5/10. Team also reports 1.5375 from an alternate non-legalized run. |
+| 62 | "UT Austin - CT" | **1.8706** | — | — | 0 | 187s/bench | | |
+| 63 | "rpocevi" | **1.8894** | — | — | 0 | 22.5s/bench | | New 5/9. |
+| 64 | "AS" | **1.9121** | 1.4614 | 2.3508 | 0 | 0.16s total | :white_check_mark: | |
+| 65 | "Adi's Team" | **2.0025** | — | — | 0 | 3726s/bench | | Blocked on `compute_proxy_cost(skip_congestion=True)` kwarg. |
+| 66 | "Sharc #1" | **2.0433** | 1.5143 | 2.4336 | 0 | 96s/bench | :white_check_mark: | |
 | — | SA (baseline) | 2.1251 | 1.3166 | 3.6726 | 0 | — | :white_check_mark: | |
-| 57 | "Satisficing" | **2.2109** | — | — | 0 | <1s/bench | | New 5/17. (Noah Cencini) |
+| 67 | "A²" | **2.1385** | — | — | 0 | 3.93s/bench | | New 5/19. (Alexander Adams, Univ. of Pittsburgh) |
+| 68 | "Satisficing" | **2.2109** | — | — | 0 | <1s/bench | | New 5/17. (Noah Cencini) |
 | — | Greedy Row (demo) | 2.2109 | 1.6728 | 2.7696 | 0 | 0.3s total | :white_check_mark: | |
 | — | "MacroBio" | pending | — | — | — | — | | |
-| DQ | "Mike Gao" | self-reported 1.3255 | — | — | 1939 | 16min/bench | | 1939 overlaps (old submission). Resubmitted 5/17 as "Place, Route, Roll" (rank 8). |
+| — | "MLforEDA" | **80,00,000** | — | — | — | ~3.5min/bench | | New 5/20. (Parv Goyal et al., IIT Guwahati) Score reported on ISPD 2005 benchmarks — not comparable to IBM ICCAD04 proxy scores; pending review. |
+| DQ | "Mike Gao" | self-reported 1.3255 | — | — | 1939 | 16min/bench | | 1939 overlaps (old submission). Resubmitted 5/17 as "Place, Route, Roll" (rank 10). |
 | DQ | "BakaBobo" | self-reported 1.4044 | — | — | — | 282s/bench | | Missing import — code won't run. |
 
 *Submit your results via the [Submission Link](https://forms.gle/YDRtYV5Vq68SZgKW9)!*
