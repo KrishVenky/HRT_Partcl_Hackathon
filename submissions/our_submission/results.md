@@ -44,22 +44,3 @@
 | vs RePlAce | 19.7% worse |
 | Valid benchmarks | 17 / 17 |
 | Total overlaps | 0 |
-
-**Estimated leaderboard position:** ~rank 26-27 (between UT Austin RH 1.6037 and UT Austin CT 1.8706)
-
----
-
-## Leaderboard Context (as of 2026-05-03)
-
-| Rank | Team | Avg Proxy |
-|------|------|-----------|
-| 1 | Cezar (ReFine) | 1.2224 |
-| 2 | MTK (DreamPlace++) | 1.2818 |
-| 3 | RoRa (RipPlace) | 1.3241 |
-| ... | | |
-| 17 | another Waterloo kid (Batched Nesterov GP) | 1.4568 |
-| — | RePlAce baseline | 1.4578 |
-| ... | | |
-| **~26** | **Ours (SA)** | **1.7446** |
-| 27 | UT Austin CT (PROXYCost) | 1.8706 |
-| — | SA baseline | 2.1251 |

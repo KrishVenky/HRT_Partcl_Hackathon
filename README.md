@@ -1,6 +1,6 @@
 # QSA — Macro Placer · Team AxeCap
 
-**Partcl × HRT Macro Placement Challenge (2026)** — [competition details](CHALLENGE.md)
+**Partcl × HRT Macro Placement Challenge (2026)**
 
 A **Quantum-Annealing-inspired Simulated Annealing (QSA)** placer that positions
 chip macros on a floorplan to minimise the competition's proxy cost:
@@ -124,10 +124,8 @@ submissions/our_submission/
     make_gif.py        ← render the optimisation GIF (see below)
     results.md         ← full evaluation results
 
-macro_place/           ← competition evaluation framework (do not modify)
-external/MacroPlacement/ ← TILOS evaluator (git submodule)
-CHALLENGE.md           ← competition rules, prizes, baselines
-SETUP.md               ← evaluator API reference
+macro_place/           ← evaluation framework (from the public challenge repo)
+assets/qsa_ibm01.gif   ← optimisation animation
 ```
 
 ---
@@ -139,9 +137,12 @@ Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 ```bash
 git clone https://github.com/KrishVenky/HRT_Partcl_Hackathon.git
 cd HRT_Partcl_Hackathon
-git submodule update --init external/MacroPlacement
 uv sync
 ```
+
+> To run the official evaluator end-to-end you also need the TILOS MacroPlacement
+> evaluator and the IBM ICCAD04 benchmarks from the public Partcl × HRT challenge
+> framework, placed under `external/MacroPlacement/` and `benchmarks/`.
 
 ---
 
