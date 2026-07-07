@@ -1,10 +1,10 @@
-# SA Placer — Full Evaluation Results
+# SA Placer - Full Evaluation Results
 
 **Algorithm:** Simulated Annealing (greedy shelf-pack init → SA 55 min/bench)  
 **Hardware:** Local laptop (AMD, Windows 11)  
 **Date run:** 2026-05-03 to 2026-05-04  
 
-> Note: ibm03 shows 29,097s runtime due to laptop sleep mid-run. SA itself ran correctly — the score is valid.
+> Note: ibm03 shows 29,097s runtime due to laptop sleep mid-run. SA itself ran correctly - the score is valid.
 
 ---
 

@@ -1,4 +1,4 @@
-# QSA — Macro Placer · Team AxeCap
+# QSA - Macro Placer · Team AxeCap
 
 **Partcl × HRT Macro Placement Challenge (2026)**
 
@@ -11,17 +11,17 @@ Proxy Cost = 1.0 × Wirelength  +  0.5 × Density  +  0.5 × Congestion      (lo
 
 <p align="center">
   <img src="assets/qsa_ibm01.gif" alt="QSA optimising the ibm01 macro layout" width="560"><br>
-  <em>QSA settling 246 macros on ibm01 — blue = movable, orange = just moved, darker = overlap.</em>
+  <em>QSA settling 246 macros on ibm01 - blue = movable, orange = just moved, darker = overlap.</em>
 </p>
 
 ---
 
 ## Highlights
 
-- **Zero overlaps on all 17 IBM benchmarks** — every placement is legal, no float-precision violations.
-- **~38× faster HPWL** via a fully vectorised, batched net tensor — far more SA moves per second.
-- **Optimises the real objective** — SA minimises the exact `WL + 0.5·D + 0.5·C` proxy cost, not just wirelength.
-- **Single self-contained file** — [`qsa_contest.py`](submissions/our_submission/qsa_contest.py) runs under the official evaluator with no extra submission dependencies.
+- **Zero overlaps on all 17 IBM benchmarks** - every placement is legal, no float-precision violations.
+- **~38× faster HPWL** via a fully vectorised, batched net tensor - far more SA moves per second.
+- **Optimises the real objective** - SA minimises the exact `WL + 0.5·D + 0.5·C` proxy cost, not just wirelength.
+- **Single self-contained file** - [`qsa_contest.py`](submissions/our_submission/qsa_contest.py) runs under the official evaluator with no extra submission dependencies.
 
 ---
 
@@ -47,14 +47,14 @@ true proxy cost. The pieces that matter:
 
 1. **Smart initialisation.** Starts from the benchmark's hand-crafted `macro_positions`
    layout, legalised with a tetris-style spiral search. Falls back to shelf-packing only
-   if legalisation fails — so SA begins from a far better point than a greedy start.
+   if legalisation fails - so SA begins from a far better point than a greedy start.
 
 2. **Vectorised HPWL.** A padded net tensor lets half-perimeter wirelength be computed
    fully batched (~38× faster than a Python net-loop), which buys many more moves inside
    the time budget.
 
 3. **Proxy-cost objective.** SA directly minimises `WL + 0.5·Density + 0.5·Congestion`
-   — the exact metric the evaluator scores — instead of a wirelength-only proxy.
+   - the exact metric the evaluator scores - instead of a wirelength-only proxy.
 
 4. **Move mix.** 40% pairwise swaps + 60% random perturbations, with
    connectivity-weighted selection (macros on more nets move more often).
@@ -67,13 +67,13 @@ true proxy cost. The pieces that matter:
    ibm17 (~166 s/call) never stalls the run.
 
 7. **`plc` auto-loading.** If the evaluator doesn't pass a `PlacementCost` object, the
-   placer loads it from disk automatically — full proxy-cost tracking in every run mode.
+   placer loads it from disk automatically - full proxy-cost tracking in every run mode.
 
 ---
 
 ## Results
 
-Full 55-minute runs, all 17 IBM benchmarks — **17/17 valid, zero overlaps.**
+Full 55-minute runs, all 17 IBM benchmarks - **17/17 valid, zero overlaps.**
 
 | | Score |
 |---|---|
@@ -81,7 +81,7 @@ Full 55-minute runs, all 17 IBM benchmarks — **17/17 valid, zero overlaps.**
 | SA baseline | 2.1251 |
 | RePlAce baseline | 1.4578 |
 | vs SA baseline | **+17.9% better** |
-| vs RePlAce baseline | −19.7% |
+| vs RePlAce baseline | -19.7% |
 | Valid placements (0 overlaps) | **17 / 17** |
 
 <details>
@@ -92,11 +92,11 @@ Full 55-minute runs, all 17 IBM benchmarks — **17/17 valid, zero overlaps.**
 | ibm01 | 1.2967 | 0.065 | 1.054 | 1.409 | +1.5%  | 0 |
 | ibm02 | 1.8409 | 0.078 | 1.060 | 2.466 | +3.5%  | 0 |
 | ibm03 | 1.7131 | 0.090 | 1.028 | 2.218 | +1.6%  | 0 |
-| ibm04 | 1.6252 | 0.073 | 1.077 | 2.027 | −8.1%  | 0 |
+| ibm04 | 1.6252 | 0.073 | 1.077 | 2.027 | -8.1%  | 0 |
 | ibm06 | 1.9216 | 0.064 | 1.021 | 2.694 | +23.3% | 0 |
 | ibm07 | 1.7698 | 0.067 | 1.127 | 2.278 | +12.5% | 0 |
-| ibm08 | 2.1493 | 0.080 | 1.159 | 2.980 | −11.7% | 0 |
-| ibm09 | 1.4169 | 0.059 | 1.125 | 1.590 | −2.1%  | 0 |
+| ibm08 | 2.1493 | 0.080 | 1.159 | 2.980 | -11.7% | 0 |
+| ibm09 | 1.4169 | 0.059 | 1.125 | 1.590 | -2.1%  | 0 |
 | ibm10 | 1.8698 | 0.076 | 1.013 | 2.574 | +11.4% | 0 |
 | ibm11 | 1.4808 | 0.058 | 1.111 | 1.734 | +13.5% | 0 |
 | ibm12 | 2.1812 | 0.077 | 1.038 | 3.170 | +22.8% | 0 |
@@ -175,11 +175,11 @@ uv run python submissions/our_submission/make_gif.py --benchmark ibm01 --frames 
 
 ## Team
 
-**Team AxeCap** — Krishna Venkatesh, Karthikeya Machiraju, Krishna Sujith, Adithya Shetty.
+**Team AxeCap** - Krishna Venkatesh, Karthikeya Machiraju, Krishna Sujith, Adithya Shetty.
 
 Built for the Partcl × HRT Macro Placement Challenge. Thanks to William Salcedo and the
 Partcl team for a genuinely rigorous competition, and to the HRT team for the swag.
 
 ## License
 
-Apache License 2.0 — see [LICENSE.md](LICENSE.md).
+Apache License 2.0 - see [LICENSE.md](LICENSE.md).
